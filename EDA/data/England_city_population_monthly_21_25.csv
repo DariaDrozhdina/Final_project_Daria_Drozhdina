@@ -47,7 +47,18 @@ date,city,population
 2024-10,London,9076250
 2024-11,London,9082500
 2024-12,London,9088750
-2025-12,London,9095000
+2025-01,London,9095000
+2025-02,London,9101278
+2025-03,London,9107556
+2025-04,London,9113834
+2025-05,London,9120112
+2025-06,London,9126389
+2025-07,London,9132667
+2025-08,London,9138945
+2025-09,London,9145223
+2025-10,London,9151501
+2025-11,London,9157779
+2025-12,London,9164057
 2021-01,Brighton and Hove,276500
 2021-02,Brighton and Hove,276625
 2021-03,Brighton and Hove,276750
@@ -96,7 +107,18 @@ date,city,population
 2024-10,Brighton and Hove,285918
 2024-11,Brighton and Hove,286145
 2024-12,Brighton and Hove,286372
-2025-12,Brighton and Hove,286600
+2025-01,Brighton and Hove,286600
+2025-02,Brighton and Hove,286815
+2025-03,Brighton and Hove,287030
+2025-04,Brighton and Hove,287246
+2025-05,Brighton and Hove,287461
+2025-06,Brighton and Hove,287676
+2025-07,Brighton and Hove,287891
+2025-08,Brighton and Hove,288107
+2025-09,Brighton and Hove,288322
+2025-10,Brighton and Hove,288537
+2025-11,Brighton and Hove,288752
+2025-12,Brighton and Hove,288968
 2021-01,Canterbury,156600
 2021-02,Canterbury,156775
 2021-03,Canterbury,156950
@@ -145,7 +167,18 @@ date,city,population
 2024-10,Canterbury,163150
 2024-11,Canterbury,163267
 2024-12,Canterbury,163383
-2025-12,Canterbury,163500
+2025-01,Canterbury,163500
+2025-02,Canterbury,163648
+2025-03,Canterbury,163795
+2025-04,Canterbury,163943
+2025-05,Canterbury,164091
+2025-06,Canterbury,164239
+2025-07,Canterbury,164386
+2025-08,Canterbury,164534
+2025-09,Canterbury,164682
+2025-10,Canterbury,164829
+2025-11,Canterbury,164977
+2025-12,Canterbury,165125
 2021-01,Plymouth,264700
 2021-02,Plymouth,264808
 2021-03,Plymouth,264917
@@ -194,7 +227,18 @@ date,city,population
 2024-10,Plymouth,270125
 2024-11,Plymouth,270250
 2024-12,Plymouth,270375
-2025-12,Plymouth,270500
+2025-01,Plymouth,270500
+2025-02,Plymouth,270622
+2025-03,Plymouth,270745
+2025-04,Plymouth,270867
+2025-05,Plymouth,270990
+2025-06,Plymouth,271112
+2025-07,Plymouth,271235
+2025-08,Plymouth,271357
+2025-09,Plymouth,271480
+2025-10,Plymouth,271602
+2025-11,Plymouth,271725
+2025-12,Plymouth,271847
 2021-01,Exeter,130700
 2021-02,Exeter,130733
 2021-03,Exeter,130767
@@ -243,7 +287,18 @@ date,city,population
 2024-10,Exeter,132200
 2024-11,Exeter,132233
 2024-12,Exeter,132267
-2025-12,Exeter,132300
+2025-01,Exeter,132300
+2025-02,Exeter,132334
+2025-03,Exeter,132367
+2025-04,Exeter,132401
+2025-05,Exeter,132434
+2025-06,Exeter,132468
+2025-07,Exeter,132502
+2025-08,Exeter,132535
+2025-09,Exeter,132569
+2025-10,Exeter,132602
+2025-11,Exeter,132636
+2025-12,Exeter,132669
 2021-01,Bristol,472500
 2021-02,Bristol,473125
 2021-03,Bristol,473750
@@ -292,7 +347,18 @@ date,city,population
 2024-10,Bristol,500100
 2024-11,Bristol,500733
 2024-12,Bristol,501367
-2025-12,Bristol,502000
+2025-01,Bristol,502000
+2025-02,Bristol,502638
+2025-03,Bristol,503276
+2025-04,Bristol,503915
+2025-05,Bristol,504553
+2025-06,Bristol,505191
+2025-07,Bristol,505829
+2025-08,Bristol,506468
+2025-09,Bristol,507106
+2025-10,Bristol,507744
+2025-11,Bristol,508382
+2025-12,Bristol,509021
 2021-01,Nottingham,323600
 2021-02,Nottingham,323717
 2021-03,Nottingham,323833
@@ -341,7 +407,18 @@ date,city,population
 2024-10,Nottingham,332894
 2024-11,Nottingham,333096
 2024-12,Nottingham,333298
-2025-12,Nottingham,333500
+2025-01,Nottingham,333500
+2025-02,Nottingham,333710
+2025-03,Nottingham,333921
+2025-04,Nottingham,334131
+2025-05,Nottingham,334341
+2025-06,Nottingham,334551
+2025-07,Nottingham,334762
+2025-08,Nottingham,334972
+2025-09,Nottingham,335182
+2025-10,Nottingham,335392
+2025-11,Nottingham,335603
+2025-12,Nottingham,335813
 2021-01,Peterborough,215700
 2021-02,Peterborough,215892
 2021-03,Peterborough,216083
@@ -390,7 +467,18 @@ date,city,population
 2024-10,Peterborough,225250
 2024-11,Peterborough,225500
 2024-12,Peterborough,225750
-2025-12,Peterborough,226000
+2025-01,Peterborough,226000
+2025-02,Peterborough,226221
+2025-03,Peterborough,226442
+2025-04,Peterborough,226663
+2025-05,Peterborough,226884
+2025-06,Peterborough,227105
+2025-07,Peterborough,227326
+2025-08,Peterborough,227547
+2025-09,Peterborough,227768
+2025-10,Peterborough,227989
+2025-11,Peterborough,228209
+2025-12,Peterborough,228430
 2021-01,Birmingham,1144900
 2021-02,Birmingham,1145533
 2021-03,Birmingham,1146167
@@ -439,7 +527,18 @@ date,city,population
 2024-10,Birmingham,1173700
 2024-11,Birmingham,1174333
 2024-12,Birmingham,1174967
-2025-12,Birmingham,1175600
+2025-01,Birmingham,1175600
+2025-02,Birmingham,1176250
+2025-03,Birmingham,1176900
+2025-04,Birmingham,1177551
+2025-05,Birmingham,1178201
+2025-06,Birmingham,1178851
+2025-07,Birmingham,1179501
+2025-08,Birmingham,1180152
+2025-09,Birmingham,1180802
+2025-10,Birmingham,1181452
+2025-11,Birmingham,1182102
+2025-12,Birmingham,1182753
 2021-01,Leeds,812000
 2021-02,Leeds,812667
 2021-03,Leeds,813333
@@ -488,7 +587,18 @@ date,city,population
 2024-10,Leeds,842750
 2024-11,Leeds,843500
 2024-12,Leeds,844250
-2025-12,Leeds,845000
+2025-01,Leeds,845000
+2025-02,Leeds,845705
+2025-03,Leeds,846410
+2025-04,Leeds,847114
+2025-05,Leeds,847819
+2025-06,Leeds,848524
+2025-07,Leeds,849229
+2025-08,Leeds,849934
+2025-09,Leeds,850638
+2025-10,Leeds,851343
+2025-11,Leeds,852048
+2025-12,Leeds,852753
 2021-01,Manchester,551900
 2021-02,Manchester,552575
 2021-03,Manchester,553250
@@ -537,7 +647,18 @@ date,city,population
 2024-10,Manchester,584750
 2024-11,Manchester,585500
 2024-12,Manchester,586250
-2025-12,Manchester,587000
+2025-01,Manchester,587000
+2025-02,Manchester,587760
+2025-03,Manchester,588520
+2025-04,Manchester,589280
+2025-05,Manchester,590039
+2025-06,Manchester,590799
+2025-07,Manchester,591559
+2025-08,Manchester,592319
+2025-09,Manchester,593079
+2025-10,Manchester,593839
+2025-11,Manchester,594599
+2025-12,Manchester,595359
 2021-01,York,202800
 2021-02,York,202983
 2021-03,York,203167
@@ -586,7 +707,18 @@ date,city,population
 2024-10,York,210575
 2024-11,York,210717
 2024-12,York,210858
-2025-12,York,211000
+2025-01,York,211000
+2025-02,York,211175
+2025-03,York,211350
+2025-04,York,211525
+2025-05,York,211700
+2025-06,York,211876
+2025-07,York,212051
+2025-08,York,212226
+2025-09,York,212401
+2025-10,York,212576
+2025-11,York,212751
+2025-12,York,212926
 2021-01,Newcastle upon Tyne,300100
 2021-02,Newcastle upon Tyne,300667
 2021-03,Newcastle upon Tyne,301233
@@ -635,7 +767,18 @@ date,city,population
 2024-10,Newcastle upon Tyne,325401
 2024-11,Newcastle upon Tyne,325934
 2024-12,Newcastle upon Tyne,326467
-2025-12,Newcastle upon Tyne,327000
+2025-01,Newcastle upon Tyne,327000
+2025-02,Newcastle upon Tyne,327591
+2025-03,Newcastle upon Tyne,328182
+2025-04,Newcastle upon Tyne,328773
+2025-05,Newcastle upon Tyne,329365
+2025-06,Newcastle upon Tyne,329956
+2025-07,Newcastle upon Tyne,330547
+2025-08,Newcastle upon Tyne,331138
+2025-09,Newcastle upon Tyne,331729
+2025-10,Newcastle upon Tyne,332320
+2025-11,Newcastle upon Tyne,332911
+2025-12,Newcastle upon Tyne,333503
 2021-01,Sunderland,275506
 2021-02,Sunderland,275630
 2021-03,Sunderland,275755
@@ -684,7 +827,18 @@ date,city,population
 2024-10,Sunderland,281125
 2024-11,Sunderland,281250
 2024-12,Sunderland,281375
-2025-12,Sunderland,281500
+2025-01,Sunderland,281500
+2025-02,Sunderland,281627
+2025-03,Sunderland,281753
+2025-04,Sunderland,281880
+2025-05,Sunderland,282006
+2025-06,Sunderland,282133
+2025-07,Sunderland,282259
+2025-08,Sunderland,282386
+2025-09,Sunderland,282513
+2025-10,Sunderland,282639
+2025-11,Sunderland,282766
+2025-12,Sunderland,282892
 2021-01,Middlesbrough,143900
 2021-02,Middlesbrough,143950
 2021-03,Middlesbrough,144000
@@ -733,7 +887,18 @@ date,city,population
 2024-10,Middlesbrough,145875
 2024-11,Middlesbrough,145917
 2024-12,Middlesbrough,145958
-2025-12,Middlesbrough,146000
+2025-01,Middlesbrough,146000
+2025-02,Middlesbrough,146044
+2025-03,Middlesbrough,146088
+2025-04,Middlesbrough,146132
+2025-05,Middlesbrough,146177
+2025-06,Middlesbrough,146221
+2025-07,Middlesbrough,146265
+2025-08,Middlesbrough,146309
+2025-09,Middlesbrough,146353
+2025-10,Middlesbrough,146397
+2025-11,Middlesbrough,146441
+2025-12,Middlesbrough,146486
 2021-01,Salisbury,41820
 2021-02,Salisbury,41835
 2021-03,Salisbury,41850
@@ -782,7 +947,18 @@ date,city,population
 2024-10,Salisbury,42502
 2024-11,Salisbury,42518
 2024-12,Salisbury,42534
-2025-12,Salisbury,42550
+2025-01,Salisbury,42550
+2025-02,Salisbury,42565
+2025-03,Salisbury,42581
+2025-04,Salisbury,42596
+2025-05,Salisbury,42611
+2025-06,Salisbury,42627
+2025-07,Salisbury,42642
+2025-08,Salisbury,42658
+2025-09,Salisbury,42673
+2025-10,Salisbury,42688
+2025-11,Salisbury,42704
+2025-12,Salisbury,42719
 2021-01,Kendal,28940
 2021-02,Kendal,28945
 2021-03,Kendal,28950
@@ -831,4 +1007,15 @@ date,city,population
 2024-10,Kendal,29312
 2024-11,Kendal,29325
 2024-12,Kendal,29338
-2025-12,Kendal,29350
+2025-01,Kendal,29350
+2025-02,Kendal,29359
+2025-03,Kendal,29367
+2025-04,Kendal,29376
+2025-05,Kendal,29384
+2025-06,Kendal,29393
+2025-07,Kendal,29402
+2025-08,Kendal,29410
+2025-09,Kendal,29419
+2025-10,Kendal,29428
+2025-11,Kendal,29436
+2025-12,Kendal,29445
