@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>England Prescription Map</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; }
+  h1 { text-align: center; padding: 20px 0 4px; font-size: 1.25rem; font-weight: 600; color: #fff; }
+  p.subtitle { text-align: center; color: #888; font-size: 0.82rem; margin-bottom: 14px; }
+  .controls { display: flex; justify-content: center; gap: 28px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+  .controls label { font-size: 0.82rem; color: #aaa; margin-right: 6px; }
+  .btn-group { display: flex; gap: 6px; }
+  .btn { background: #1e2130; border: 1px solid #333; color: #ccc; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-size: 0.82rem; transition: all 0.15s; }
+  .btn:hover { background: #2a2f45; }
+  .btn.active { background: #4361ee; border-color: #4361ee; color: #fff; font-weight: 600; }
+  .year-btn { background: #1e2130; border: 1px solid #333; color: #ccc; padding: 5px 13px; border-radius: 16px; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+  .year-btn:hover { background: #2a2f45; }
+  .year-btn.active { background: #e63946; border-color: #e63946; color: #fff; font-weight: 600; }
+  #map { width: 100%; height: calc(100vh - 145px); min-height: 480px; }
+  #status { text-align: center; color: #666; font-size: 0.78rem; padding: 4px 0 2px; min-height: 18px; }
+</style>
+</head>
+<body>
+<h1>Antidepressant &amp; Anxiolytic Prescriptions — England Cities</h1>
+<p class="subtitle">Annual prescriptions per 1,000 population per day &middot; Colour intensity represents prescription rate</p>
+<div class="controls">
+  <div>
+    <label>Drug group:</label>
+    <div class="btn-group">
+      <button class="btn active" onclick="setGroup('antidepressant', this)">Antidepressants</button>
+      <button class="btn" onclick="setGroup('anxiolytic', this)">Anxiolytics</button>
+    </div>
+  </div>
+  <div>
+    <label>Year:</label>
+    <div class="btn-group" id="yearBtns">
+      <button class="year-btn active" onclick="setYear('2021', this)">2021</button>
+      <button class="year-btn" onclick="setYear('2022', this)">2022</button>
+      <button class="year-btn" onclick="setYear('2023', this)">2023</button>
+      <button class="year-btn" onclick="setYear('2024', this)">2024</button>
+      <button class="year-btn" onclick="setYear('2025', this)">2025</button>
+    </div>
+  </div>
+</div>
+<div id="status">Loading city boundaries…</div>
+<div id="map"></div>
+
+<script>
+const PRESCRIPTIONS = {"antidepressant": {"2021": {"Birmingham": 36.6, "Brighton": 40.8, "Bristol": 81.0, "Canterbury": 24.1, "Exeter": 63.4, "Leeds": 45.2, "London": 16.9, "Manchester": 110.8, "Middlesbrough": 102.7, "Newcastle upon Tyne": 102.7, "Nottingham": 107.8, "Peterborough": 66.4, "Plymouth": 63.7, "Sunderland": 65.2, "York": 60.6}, "2022": {"Birmingham": 38.4, "Brighton": 40.2, "Bristol": 80.2, "Canterbury": 24.6, "Exeter": 65.5, "Leeds": 46.1, "London": 17.7, "Manchester": 111.8, "Middlesbrough": 104.7, "Newcastle upon Tyne": 102.7, "Nottingham": 112.7, "Peterborough": 67.8, "Plymouth": 63.2, "Sunderland": 65.9, "York": 62.0}, "2023": {"Birmingham": 40.5, "Brighton": 39.4, "Bristol": 78.6, "Canterbury": 24.4, "Exeter": 65.7, "Leeds": 47.4, "London": 18.3, "Manchester": 113.6, "Middlesbrough": 108.3, "Newcastle upon Tyne": 103.3, "Nottingham": 115.8, "Peterborough": 68.8, "Plymouth": 60.4, "Sunderland": 67.5, "York": 62.0}, "2024": {"Birmingham": 42.4, "Brighton": 39.0, "Bristol": 77.2, "Canterbury": 25.0, "Exeter": 67.0, "Leeds": 48.8, "London": 19.6, "Manchester": 117.6, "Middlesbrough": 112.9, "Newcastle upon Tyne": 104.1, "Nottingham": 117.4, "Peterborough": 70.5, "Plymouth": 59.3, "Sunderland": 69.6, "York": 62.9}, "2025": {"Birmingham": 44.0, "Brighton": 38.9, "Bristol": 76.5, "Canterbury": 25.1, "Exeter": 68.0, "Leeds": 49.9, "London": 20.5, "Manchester": 118.9, "Middlesbrough": 116.0, "Newcastle upon Tyne": 104.8, "Nottingham": 120.5, "Peterborough": 71.5, "Plymouth": 58.4, "Sunderland": 71.1, "York": 63.7}}, "anxiolytic": {"2021": {"Birmingham": 12.5, "Brighton": 16.5, "Bristol": 22.2, "Canterbury": 7.3, "Exeter": 21.3, "Leeds": 10.4, "London": 5.2, "Manchester": 32.4, "Middlesbrough": 29.4, "Newcastle upon Tyne": 24.7, "Nottingham": 26.4, "Peterborough": 17.7, "Plymouth": 19.7, "Sunderland": 12.3, "York": 12.9}, "2022": {"Birmingham": 12.6, "Brighton": 16.3, "Bristol": 21.1, "Canterbury": 7.6, "Exeter": 21.8, "Leeds": 10.5, "London": 5.2, "Manchester": 31.7, "Middlesbrough": 28.2, "Newcastle upon Tyne": 24.1, "Nottingham": 26.9, "Peterborough": 17.2, "Plymouth": 18.6, "Sunderland": 12.1, "York": 13.0}, "2023": {"Birmingham": 12.8, "Brighton": 15.9, "Bristol": 20.2, "Canterbury": 7.9, "Exeter": 21.6, "Leeds": 10.4, "London": 5.3, "Manchester": 31.4, "Middlesbrough": 27.1, "Newcastle upon Tyne": 23.2, "Nottingham": 26.8, "Peterborough": 16.9, "Plymouth": 17.1, "Sunderland": 11.9, "York": 12.7}, "2024": {"Birmingham": 12.8, "Brighton": 15.5, "Bristol": 19.3, "Canterbury": 8.2, "Exeter": 21.6, "Leeds": 10.3, "London": 5.4, "Manchester": 31.7, "Middlesbrough": 26.2, "Newcastle upon Tyne": 22.7, "Nottingham": 26.5, "Peterborough": 16.6, "Plymouth": 16.4, "Sunderland": 11.6, "York": 12.9}, "2025": {"Birmingham": 12.9, "Brighton": 15.0, "Bristol": 18.6, "Canterbury": 8.9, "Exeter": 22.3, "Leeds": 10.4, "London": 5.7, "Manchester": 31.6, "Middlesbrough": 25.9, "Newcastle upon Tyne": 22.1, "Nottingham": 26.6, "Peterborough": 16.6, "Plymouth": 15.9, "Sunderland": 11.6, "York": 12.9}}};
+
+// Mapping: dataset city name → ONS LAD22NM
+const LAD_NAME_MAP = {
+  'Birmingham':          'Birmingham',
+  'Brighton':            'Brighton and Hove',
+  'Bristol':             'Bristol, City of',
+  'Canterbury':          'Canterbury',
+  'Exeter':              'Exeter',
+  'Leeds':               'Leeds',
+  'Manchester':          'Manchester',
+  'Middlesbrough':       'Middlesbrough',
+  'Newcastle upon Tyne': 'Newcastle upon Tyne',
+  'Nottingham':          'Nottingham',
+  'Peterborough':        'Peterborough',
+  'Plymouth':            'Plymouth',
+  'Sunderland':          'Sunderland',
+  'York':                'York',
+  // London fetched from Regions layer separately
+};
+
+const ONS_BASE = 'https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services';
+const LAD_URL  = `${ONS_BASE}/Local_Authority_Districts_May_2022_UK_BUC_V3/FeatureServer/0/query`;
+const RGN_URL  = `${ONS_BASE}/Regions_December_2022_EN_BUC/FeatureServer/0/query`;
+
+let geojsonCache = null;
+let currentGroup = 'antidepressant';
+let currentYear  = '2021';
+
+async function loadBoundaries() {
+  if (geojsonCache) return geojsonCache;
+
+  const ladNames = Object.values(LAD_NAME_MAP).map(n => `'${n}'`).join(',');
+  const ladWhere = encodeURIComponent(`LAD22NM IN (${ladNames})`);
+  const ladQuery = `${LAD_URL}?where=${ladWhere}&outFields=LAD22NM&f=geojson&outSR=4326`;
+  const rgnWhere = encodeURIComponent(`RGN22NM='London'`);
+  const rgnQuery = `${RGN_URL}?where=${rgnWhere}&outFields=RGN22NM&f=geojson&outSR=4326`;
+
+  const [ladRes, rgnRes] = await Promise.all([fetch(ladQuery), fetch(rgnQuery)]);
+  const [ladGeo, rgnGeo] = await Promise.all([ladRes.json(), rgnRes.json()]);
+
+  // Reverse map: ONS name → dataset city name
+  const reverseMap = {};
+  for (const [city, onsName] of Object.entries(LAD_NAME_MAP)) reverseMap[onsName] = city;
+
+  const features = [];
+
+  for (const feat of ladGeo.features) {
+    const onsName = feat.properties.LAD22NM;
+    const city = reverseMap[onsName];
+    if (city) features.push({ ...feat, id: city, properties: { city } });
+  }
+
+  for (const feat of rgnGeo.features) {
+    features.push({ ...feat, id: 'London', properties: { city: 'London' } });
+  }
+
+  geojsonCache = { type: 'FeatureCollection', features };
+  return geojsonCache;
+}
+
+function render(geo) {
+  const vals    = PRESCRIPTIONS[currentGroup][currentYear];
+  const cities  = geo.features.map(f => f.id);
+  const zValues = cities.map(c => vals[c] ?? 0);
+
+  // Use consistent scale across all years for fair comparison
+  const allVals = Object.values(PRESCRIPTIONS[currentGroup]).flatMap(y => Object.values(y));
+  const zmin = Math.min(...allVals);
+  const zmax = Math.max(...allVals);
+
+  const colorscale = currentGroup === 'antidepressant'
+    ? [[0, '#0d1b2a'], [0.25, '#1a4a7a'], [0.5, '#2670A6'], [0.75, '#4cc9f0'], [1, '#caf0f8']]
+    : [[0, '#1a0a2e'], [0.25, '#5a1a7a'], [0.5, '#9b2fae'], [0.75, '#e040fb'], [1, '#f8d0ff']];
+
+  const trace = {
+    type: 'choroplethmapbox',
+    geojson: geo,
+    locations: cities,
+    z: zValues,
+    zmin,
+    zmax,
+    colorscale,
+    customdata: cities.map(c => [c, vals[c] ?? 0]),
+    hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} Rx / 1k / day<extra></extra>',
+    colorbar: {
+      title: { text: 'Rx / 1k / day', font: { color: '#ccc', size: 11 } },
+      tickfont: { color: '#ccc', size: 10 },
+      bgcolor: 'rgba(0,0,0,0)',
+      bordercolor: '#444',
+      thickness: 14,
+      len: 0.6,
+    },
+    marker: { opacity: 0.85, line: { color: '#ffffff', width: 1.2 } },
+  };
+
+  const layout = {
+    mapbox: {
+      style: 'carto-darkmatter',
+      center: { lat: 52.5, lon: -1.7 },
+      zoom: 5.3,
+    },
+    paper_bgcolor: '#0f1117',
+    margin: { t: 0, b: 0, l: 0, r: 0 },
+    font: { color: '#ccc' },
+    hoverlabel: {
+      bgcolor: '#1e2130',
+      bordercolor: '#4361ee',
+      font: { color: '#fff', size: 13 },
+    },
+  };
+
+  Plotly.react('map', [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+function setGroup(g, el) {
+  currentGroup = g;
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (geojsonCache) render(geojsonCache);
+}
+
+function setYear(y, el) {
+  currentYear = y;
+  document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (geojsonCache) render(geojsonCache);
+}
+
+(async () => {
+  try {
+    const geo = await loadBoundaries();
+    document.getElementById('status').textContent = '';
+    render(geo);
+  } catch (e) {
+    document.getElementById('status').textContent = 'Failed to load boundaries: ' + e.message;
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
