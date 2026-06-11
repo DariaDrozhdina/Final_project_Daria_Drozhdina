@@ -1,0 +1,46 @@
+city,year,value,ci_lower,ci_upper
+Birmingham,2020,7.2,6.97,7.42
+Birmingham,2021,7.5,7.34,7.66
+Birmingham,2022,7.24,7.07,7.4
+Brighton,2020,7.27,7.09,7.45
+Brighton,2021,7.57,7.39,7.75
+Brighton,2022,7.39,7.17,7.6
+Bristol,2020,7.15,6.97,7.33
+Bristol,2021,7.37,7.2,7.55
+Bristol,2022,7.31,6.98,7.64
+Canterbury,2020,7.47,7.04,7.91
+Canterbury,2021,7.91,7.6,8.22
+Canterbury,2022,7.46,7.14,7.78
+Exeter,2020,7.35,7.07,7.63
+Exeter,2021,7.31,6.92,7.69
+Exeter,2022,7.36,7.01,7.71
+Leeds,2020,7.28,7.11,7.46
+Leeds,2021,7.54,7.36,7.72
+Leeds,2022,7.46,7.28,7.65
+London,2020,7.27,7.22,7.32
+London,2021,7.46,7.41,7.51
+London,2022,7.35,7.29,7.41
+Manchester,2020,7.12,6.9,7.35
+Manchester,2021,7.45,7.27,7.63
+Manchester,2022,6.97,6.69,7.26
+Middlesbrough,2020,7.21,7.01,7.4
+Middlesbrough,2021,7.5,7.32,7.68
+Middlesbrough,2022,7.35,7.12,7.57
+Newcastle upon Tyne,2020,7.29,7.1,7.49
+Newcastle upon Tyne,2021,7.69,7.5,7.88
+Newcastle upon Tyne,2022,7.5,7.18,7.83
+Nottingham,2020,7.12,6.91,7.33
+Nottingham,2021,7.25,7.04,7.46
+Nottingham,2022,7.24,7.03,7.45
+Peterborough,2020,7.21,7,7.42
+Peterborough,2021,7.27,7.04,7.49
+Peterborough,2022,7.25,6.99,7.5
+Plymouth,2020,7.56,7.34,7.77
+Plymouth,2021,7.4,7.2,7.6
+Plymouth,2022,7.45,7.25,7.65
+Sunderland,2020,7.3,7.12,7.47
+Sunderland,2021,7.23,7.05,7.41
+Sunderland,2022,7.3,7.1,7.5
+York,2020,7.46,7.27,7.65
+York,2021,7.65,7.47,7.83
+York,2022,7.57,7.42,7.72
