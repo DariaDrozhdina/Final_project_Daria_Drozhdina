@@ -21,6 +21,8 @@ st.set_page_config(
 st.markdown("""
 <style>
   [data-testid="stAppViewContainer"] { background: #FAFAFA; }
+  [data-baseweb="tab"] { font-size: 0.55rem !important; padding: 3px 7px !important; }
+  [data-baseweb="tab-list"] { gap: 1px !important; }
   .kpi-box {
       background: white;
       border-radius: 10px;
@@ -787,7 +789,7 @@ def slide_overview():
     with ctrl_l:
         st.markdown("<p style='font-size:0.85rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0px;'>Year</p>", unsafe_allow_html=True)
         year = st.select_slider(
-            "Year", options=YEARS, value=2023, key="ov_year", label_visibility="collapsed",
+            "Year", options=YEARS, value=2021, key="ov_year", label_visibility="collapsed",
         )
     with ctrl_r:
         st.markdown("<p style='font-size:0.85rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;'>Packs Issued</p>", unsafe_allow_html=True)
@@ -1285,179 +1287,6 @@ def slide_england_cities():
             )
             st.plotly_chart(fig_map, use_container_width=True)
 
-    # ── SECTION 3: Seasonality by City (same analysis as Seasonality tab) ───────
-    st.markdown("<hr style='margin:10px 0 6px;border-color:#DDD;'>", unsafe_allow_html=True)
-    st.markdown("<p style='font-weight:700;color:#222;font-size:1.8rem;margin:10px 0 10px;'>Seasonal Pattern by City — Antidepressants</p>", unsafe_allow_html=True)
-
-    try:
-        from statsmodels.tsa.seasonal import seasonal_decompose
-        from scipy.stats import kruskal as _kruskal_city
-        HAS_SM_CITY = True
-    except ImportError:
-        HAS_SM_CITY = False
-
-    all_cities = sorted(city_df["city"].unique().tolist())
-
-    # ── Build city sun table early so it can drive city selection ────────────
-    _sun_base_early = (
-        city_df[city_df["group"] == "antidepressant"]
-        .assign(tsun_hours=lambda d: d["tsun"] / 60, year=lambda d: d["date"].dt.year)
-        .drop_duplicates(subset=["city", "date"])
-    )
-    city_sun_tbl = (
-        _sun_base_early.groupby(["city", "year"])["tsun_hours"].sum()
-        .reset_index()
-        .groupby("city")["tsun_hours"].mean()
-        .reset_index()
-        .rename(columns={"tsun_hours": "Sun hrs / year"})
-        .sort_values("Sun hrs / year", ascending=False)
-        .reset_index(drop=True)
-    )
-    city_sun_tbl["Sun hrs / year"] = city_sun_tbl["Sun hrs / year"].round(0).astype(int)
-
-    # ── Column layout: charts left (wide), clickable sun table right (narrow) ──
-    seas_chart_col, seas_tbl_col = st.columns([4, 1])
-
-    # Fill right column FIRST to read the city selection
-    with seas_tbl_col:
-        st.caption("Click a city to update charts")
-        sun_selection = st.dataframe(
-            city_sun_tbl,
-            use_container_width=True,
-            hide_index=True,
-            on_select="rerun",
-            selection_mode="single-row",
-            column_config={
-                "city": st.column_config.TextColumn("City"),
-                "Sun hrs / year": st.column_config.NumberColumn("☀ hrs/yr", format="%d"),
-            },
-            height=640,
-            key="sun_city_tbl",
-        )
-        selected_rows = sun_selection.selection.rows if sun_selection.selection.rows else []
-
-    if selected_rows:
-        sel_city = city_sun_tbl.iloc[selected_rows[0]]["city"]
-    else:
-        sel_city = all_cities[0]
-
-    city_pop_val = city_df[city_df["city"] == sel_city]["population"].dropna()
-    city_tier = get_tier(city_pop_val.iloc[0]) if not city_pop_val.empty else "Small"
-    city_color = TIER_COLOR[city_tier]
-
-    # Aggregate all antidepressant substances per month → one row per month
-    df_city_seas = (
-        city_df[(city_df["city"] == sel_city) & (city_df["group"] == "antidepressant")]
-        .groupby("date")
-        .agg(
-            items_per_1k_per_day=("items_per_1k_per_day", "sum"),
-            tsun=("tsun", "first"),
-        )
-        .reset_index()
-        .sort_values("date")
-    )
-    df_city_seas["month"] = df_city_seas["date"].dt.month
-    df_city_seas["tsun_hours"] = df_city_seas["tsun"] / 60
-    RX_COL_CITY = "items_per_1k_per_day"
-
-    # ── Seasonal decomposition bar + sunshine line ────────────────────────────
-    if HAS_SM_CITY and len(df_city_seas) >= 24:
-        decomp_c = seasonal_decompose(
-            df_city_seas.set_index("date")[RX_COL_CITY], model="additive", period=12
-        )
-        df_city_seas["seasonal"] = decomp_c.seasonal.values
-        grps = [df_city_seas[df_city_seas["month"] == m]["seasonal"].dropna() for m in range(1, 13)]
-        grps = [g for g in grps if len(g) > 0]
-        stat_c, p_kw_c = _kruskal_city(*grps)
-        p_lbl_c = "p < 0.0001" if p_kw_c < 0.0001 else f"p = {p_kw_c:.4f}"
-        sig_lbl_c = "Seasonal pattern confirmed" if p_kw_c < 0.05 else "No significant seasonality"
-        seas_y = df_city_seas.groupby("month")["seasonal"].mean().values
-    else:
-        monthly_avg_c = df_city_seas.groupby("month")[RX_COL_CITY].mean()
-        overall_avg_c = df_city_seas[RX_COL_CITY].mean()
-        p_lbl_c, sig_lbl_c = "not enough data", ""
-        seas_y = (monthly_avg_c - overall_avg_c).values
-
-    fig_seas_c = go.Figure()
-    fig_seas_c.add_trace(go.Bar(
-        x=MONTH_NAMES, y=seas_y,
-        marker_color=city_color, marker_opacity=0.75,
-        hovertemplate="<b>%{x}</b>: %{y:.3f}<extra></extra>", showlegend=False,
-    ))
-    fig_seas_c.add_hline(y=0, line_color="#999", line_width=1)
-    sun_city = df_city_seas.groupby("month")["tsun_hours"].mean()
-    fig_seas_c.add_trace(go.Scatter(
-        x=MONTH_NAMES, y=sun_city.values,
-        mode="lines+markers", name="Avg sun hrs", yaxis="y2",
-        line=dict(color="#E03030", width=2, dash="dot"),
-        marker=dict(size=6, color="#E03030"),
-        hovertemplate="<b>%{x}</b>: %{y:.0f} sun hrs<extra></extra>", showlegend=True,
-    ))
-    fig_seas_c.update_layout(
-        title=dict(
-            text=f"{sel_city}   Seasonal component   Kruskal-Wallis {p_lbl_c}   {sig_lbl_c}",
-            font=dict(size=14, color=city_color),
-        ),
-        xaxis=dict(tickfont=dict(size=14, color="#333")),
-        yaxis=dict(title=dict(text="Seasonal component", font=dict(size=15, color="#333")),
-                   tickfont=dict(size=15, color="#333"), gridcolor="#EEE"),
-        yaxis2=dict(title=dict(text="Avg sun hrs", font=dict(size=14, color="#E03030")),
-                    tickfont=dict(size=15, color="#E03030"),
-                    overlaying="y", side="right", showgrid=False),
-        legend=dict(orientation="h", y=-0.15, font=dict(size=14, color="#555")),
-        paper_bgcolor="white", plot_bgcolor="white",
-        margin=dict(t=45, b=40, l=10, r=10), height=340,
-    )
-
-    # ── Detrended scatter: sunshine vs prescriptions ──────────────────────────
-    df_sc_c = df_city_seas.dropna(subset=["tsun_hours", RX_COL_CITY]).reset_index(drop=True)
-    has_scatter_c = len(df_sc_c) >= 6
-    if has_scatter_c:
-        t_c = np.arange(len(df_sc_c))
-        df_sc_c["rx_detrended"] = (
-            df_sc_c[RX_COL_CITY] - np.poly1d(np.polyfit(t_c, df_sc_c[RX_COL_CITY], 1))(t_c)
-        )
-        _lag = 2
-        sun_lag  = df_sc_c["tsun_hours"].values[:-_lag]
-        rx_lag   = df_sc_c["rx_detrended"].values[_lag:]
-        dates_lag = df_sc_c["date"].values[_lag:]
-        r_c, p_r_c = pearson_r(sun_lag, rx_lag)
-        p_lbl_r_c = "p < 0.0001" if p_r_c < 0.0001 else f"p = {p_r_c:.4f}"
-        sig_c = "✓ significant" if p_r_c < 0.05 else "✗ not significant"
-        z_c = np.polyfit(sun_lag, rx_lag, 1)
-        x_rng_c = np.linspace(sun_lag.min(), sun_lag.max(), 100)
-        fig_sc_c = go.Figure()
-        fig_sc_c.add_trace(go.Scatter(
-            x=sun_lag, y=rx_lag, mode="markers",
-            marker=dict(color=city_color, size=7, opacity=0.7),
-            text=[pd.Timestamp(d).strftime("%b %Y") for d in dates_lag],
-            hovertemplate="<b>%{text}</b><br>Sun: %{x:.0f} hrs<br>Residual: %{y:.3f}<extra></extra>",
-            showlegend=False,
-        ))
-        fig_sc_c.add_trace(go.Scatter(
-            x=x_rng_c, y=np.poly1d(z_c)(x_rng_c), mode="lines",
-            line=dict(color=city_color, width=2, dash="dash"),
-            showlegend=False, hoverinfo="skip",
-        ))
-        fig_sc_c.update_layout(
-            title=dict(
-                text=f"{sel_city}   Sunshine vs Prescriptions (detrended, 2-month lag)   r = {r_c:.3f}   {p_lbl_r_c}   {sig_c}",
-                font=dict(size=14, color=city_color),
-            ),
-            xaxis=dict(title=dict(text="Sunshine (hrs/month)", font=dict(size=15, color="#333")),
-                       tickfont=dict(size=15, color="#333"), gridcolor="#EEE"),
-            yaxis=dict(title=dict(text="Residual", font=dict(size=15, color="#333")),
-                       tickfont=dict(size=15, color="#333"), gridcolor="#EEE"),
-            paper_bgcolor="white", plot_bgcolor="white",
-            margin=dict(t=40, b=40, l=10, r=10), height=320,
-        )
-
-    # ── Charts in left column ─────────────────────────────────────────────────
-    with seas_chart_col:
-        st.plotly_chart(fig_seas_c, use_container_width=True)
-        if has_scatter_c:
-            st.plotly_chart(fig_sc_c, use_container_width=True)
-
     # ── SECTION 4: Socioeconomic Correlation (antidepressants only) ───────────
     st.markdown("<hr style='margin:10px 0 6px;border-color:#DDD;'>", unsafe_allow_html=True)
     st.markdown("<p style='font-weight:700;color:#222;font-size:1.8rem;margin:10px 0 10px;'>Antidepressants vs Socioeconomic Factors</p>", unsafe_allow_html=True)
@@ -1466,23 +1295,38 @@ def slide_england_cities():
     with sc_col1:
         sc_param = st.selectbox("Socioeconomic parameter", list(SOCIO_FILES.keys()), key="sc_param")
     with sc_col2:
-        sc_year = st.select_slider("Year ", options=YEARS, value=2023, key="sc_year")
-
-    _df_sc_raw = city_df[(city_df["group"] == "antidepressant") & (city_df["year"] == sc_year)]
-    df_rx_sc = (
-        _df_sc_raw.groupby("city")
-        .agg(total_items=("items", "sum"), population=("population", "first"))
-        .reset_index()
-        .dropna()
-    )
-    df_rx_sc["rx_rate"] = df_rx_sc["total_items"] / (df_rx_sc["population"] / 1000)
-    df_rx_sc["tier"] = df_rx_sc["population"].apply(get_tier)
+        sc_year = st.select_slider("Year ", options=["All"] + YEARS, value="All", key="sc_year")
 
     df_socio = load_socio(sc_param)
     avail_sc_years = sorted(df_socio["year"].unique())
-    sc_yr_use = sc_year if sc_year in avail_sc_years else min(avail_sc_years, key=lambda y: abs(y - sc_year))
-    df_sv = df_socio[df_socio["year"] == sc_yr_use][["city", "value"]].rename(columns={"value": "socio_val"})
-    df_sc = df_rx_sc.merge(df_sv, on="city").dropna()
+
+    if sc_year == "All":
+        # One dot per city per year
+        _df_sc_raw_all = city_df[city_df["group"] == "antidepressant"]
+        df_rx_sc_all = (
+            _df_sc_raw_all.groupby(["city", "year"])
+            .agg(total_items=("items", "sum"), population=("population", "first"))
+            .reset_index().dropna()
+        )
+        df_rx_sc_all["rx_rate"] = df_rx_sc_all["total_items"] / (df_rx_sc_all["population"] / 1000)
+        df_rx_sc_all["tier"] = df_rx_sc_all["population"].apply(get_tier)
+        df_sv_all = df_socio[["city", "year", "value"]].rename(columns={"value": "socio_val"})
+        df_sc = df_rx_sc_all.merge(df_sv_all, on=["city", "year"]).dropna()
+        df_sc["label"] = df_sc["city"] + " " + df_sc["year"].astype(str)
+        sc_yr_use = "All"
+    else:
+        _df_sc_raw = city_df[(city_df["group"] == "antidepressant") & (city_df["year"] == sc_year)]
+        df_rx_sc = (
+            _df_sc_raw.groupby("city")
+            .agg(total_items=("items", "sum"), population=("population", "first"))
+            .reset_index().dropna()
+        )
+        df_rx_sc["rx_rate"] = df_rx_sc["total_items"] / (df_rx_sc["population"] / 1000)
+        df_rx_sc["tier"] = df_rx_sc["population"].apply(get_tier)
+        sc_yr_use = sc_year if sc_year in avail_sc_years else min(avail_sc_years, key=lambda y: abs(y - sc_year))
+        df_sv = df_socio[df_socio["year"] == sc_yr_use][["city", "value"]].rename(columns={"value": "socio_val"})
+        df_sc = df_rx_sc.merge(df_sv, on="city").dropna()
+        df_sc["label"] = df_sc["city"]
 
     if len(df_sc) >= 4:
         r_sc, p_sc = pearson_r(df_sc["socio_val"], df_sc["rx_rate"])
@@ -1490,19 +1334,28 @@ def slide_england_cities():
         z_sc = np.polyfit(df_sc["socio_val"], df_sc["rx_rate"], 1)
         x_sc_line = np.linspace(df_sc["socio_val"].min(), df_sc["socio_val"].max(), 100)
 
+        # Group by prescription rate tertiles
+        terciles = df_sc["rx_rate"].quantile([1/3, 2/3])
+        def rx_group(v):
+            if v <= terciles[1/3]: return "Low prescribing"
+            elif v <= terciles[2/3]: return "Mid prescribing"
+            else: return "High prescribing"
+        df_sc["rx_group"] = df_sc["rx_rate"].apply(rx_group)
+        RX_GROUP_COLOR = {"High prescribing": "#C0392B", "Mid prescribing": "#E09C2A", "Low prescribing": "#2E86C1"}
+
         fig_sc = go.Figure()
-        for tier in ["Large", "Medium", "Small"]:
-            dt = df_sc[df_sc["tier"] == tier]
+        for grp in ["High prescribing", "Mid prescribing", "Low prescribing"]:
+            dt = df_sc[df_sc["rx_group"] == grp]
             if dt.empty:
                 continue
             fig_sc.add_trace(go.Scatter(
                 x=dt["socio_val"], y=dt["rx_rate"],
-                mode="markers+text",
-                name=tier,
-                text=dt["city"],
+                mode="markers+text" if sc_year != "All" else "markers",
+                name=grp,
+                text=dt["label"],
                 textposition="top center",
-                textfont=dict(size=13, color=TIER_COLOR[tier]),
-                marker=dict(color=TIER_COLOR[tier], size=11, opacity=0.9),
+                textfont=dict(size=12, color=RX_GROUP_COLOR[grp]),
+                marker=dict(color=RX_GROUP_COLOR[grp], size=11, opacity=0.9),
                 hovertemplate="<b>%{text}</b><br>" + sc_param + ": %{x:.2f}<br>Packs/1k pop: %{y:.0f}<extra></extra>",
             ))
         fig_sc.add_trace(go.Scatter(
@@ -1529,22 +1382,26 @@ def slide_england_cities():
         with sc_left:
             st.plotly_chart(fig_sc, use_container_width=True)
         with sc_right:
+            # Note: Housing Affordability Ratio = house price / income, so higher = LESS affordable
+            _is_affordability = "affordability" in sc_param.lower() or "housing" in sc_param.lower()
             if abs(r_sc) > 0.5 and p_sc < 0.05:
                 direction = "positively" if r_sc > 0 else "negatively"
-                interp = (f"<b>Strong {direction} correlated</b> — cities with higher {sc_param} tend to have "
-                          f"{'more' if r_sc > 0 else 'fewer'} antidepressant prescriptions.")
-                card_color = "#012169" if r_sc > 0 else "#C0392B"
-                card_bg    = "#EEF3FF" if r_sc > 0 else "#FFEEE8"
+                if _is_affordability:
+                    interp = f"<b>Strong {direction} correlated</b>"
+                else:
+                    interp = (f"<b>Strong {direction} correlated</b> — cities with higher {sc_param} tend to have "
+                              f"{'more' if r_sc > 0 else 'fewer'} antidepressant prescriptions.")
+                card_color = "#2E7D32"
+                card_bg    = "#F1F8F1"
             elif p_sc < 0.05:
                 direction = "positively" if r_sc > 0 else "negatively"
                 interp = f"<b>Moderate {direction} correlation</b> — statistically significant but modest link."
-                card_color = "#555"
-                card_bg    = "#F5F5F5"
+                card_color = "#2E7D32"
+                card_bg    = "#F1F8F1"
             else:
-                interp = ("<b>No significant correlation</b> detected (p ≥ 0.05). "
-                          "The relationship may be confounded by other city-level factors.")
+                interp = "<b>No significant correlation</b> detected (p ≥ 0.05)."
                 card_color = "#888"
-                card_bg    = "#F9F9F9"
+                card_bg    = "#F5F5F5"
             st.markdown(
                 f"<div style='background:{card_bg};border-left:5px solid {card_color};"
                 f"border-radius:8px;padding:16px 14px;margin-top:64px;'>"
@@ -1791,14 +1648,9 @@ def slide_country_comparison():
 
     # ── Correlation controls ───────────────────────────────────────────────────
     st.markdown("<hr style='margin:16px 0;border-color:#DDD;'>", unsafe_allow_html=True)
-    cc_ctrl1, cc_ctrl2 = st.columns([2, 1])
-    with cc_ctrl1:
-        cc_param = st.selectbox("Socioeconomic parameter",
-            ["Unemployment Rate", "Government Health Expenditure (% of GDP)"],
-            key="cc_param", label_visibility="visible")
-    with cc_ctrl2:
-        cc_drug = st.selectbox("Drug group", ["Anxiolytics", "Antidepressants"],
-            key="cc_drug", label_visibility="visible")
+    cc_param = "Unemployment Rate"
+    cc_drug = st.selectbox("Drug group", ["Anxiolytics", "Antidepressants"],
+        key="cc_drug", label_visibility="visible")
     cc_lag = 0
 
     master = load_master()
@@ -2213,6 +2065,154 @@ def slide_seasonality():
         interp_html += _interp(country, r, p, lag, drug_group)
     interp_html += "</div>"
     st.markdown(interp_html, unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SLIDE — CAUSAL IMPACT
+# ══════════════════════════════════════════════════════════════════════════════
+
+def slide_causal_impact():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    try:
+        # pandas 2.x removed is_datetime_or_timedelta_dtype — patch before import
+        import pandas.core.dtypes.common as _pdtypes
+        if not hasattr(_pdtypes, "is_datetime_or_timedelta_dtype"):
+            _pdtypes.is_datetime_or_timedelta_dtype = (
+                lambda arr_or_dtype: pd.api.types.is_datetime64_any_dtype(arr_or_dtype)
+                or pd.api.types.is_timedelta64_dtype(arr_or_dtype)
+            )
+        from causalimpact import CausalImpact
+        HAS_CI = True
+    except ImportError:
+        HAS_CI = False
+
+    st.markdown("<h2 style='text-align:center;color:#222;'>Causal Impact Analysis</h2>",
+                unsafe_allow_html=True)
+    st.markdown("""
+    <p style='text-align:center;color:#555;font-size:0.95rem;max-width:700px;margin:0 auto 20px;'>
+    Pick an intervention date and the model estimates what prescriptions <em>would have been</em>
+    without it — using a Bayesian structural time-series fitted on the pre-period.
+    The gap between actual and counterfactual is the causal effect.
+    </p>""", unsafe_allow_html=True)
+
+    master = load_master()
+    master["date"] = pd.to_datetime(master["date"])
+
+    # ── Controls ──────────────────────────────────────────────────────────────
+    ctrl1, ctrl2, ctrl3 = st.columns(3)
+    with ctrl1:
+        ci_country = st.selectbox("Country", ["England", "Spain"], key="ci_country")
+    with ctrl2:
+        ci_drug = st.selectbox("Drug group", ["Antidepressants", "Anxiolytics"], key="ci_drug")
+    with ctrl3:
+        ci_covariate = st.selectbox("Control variable", ["Sunshine hours", "Other drug group"],
+                                    key="ci_covariate")
+
+    # Date slider — only mid-range dates
+    all_dates = sorted(master["date"].unique())
+    date_options = [d for d in all_dates if pd.Timestamp("2022-03-01") <= pd.Timestamp(d) <= pd.Timestamp("2024-09-01")]
+    intervention_date = st.select_slider(
+        "Intervention date",
+        options=date_options,
+        value=pd.Timestamp("2023-01-01") if pd.Timestamp("2023-01-01") in [pd.Timestamp(d) for d in date_options] else date_options[len(date_options)//2],
+        format_func=lambda d: pd.Timestamp(d).strftime("%b %Y"),
+        key="ci_intervention",
+    )
+
+    color = "#012169" if ci_country == "England" else "#D95427"
+
+    # ── Build time series ─────────────────────────────────────────────────────
+    df_main = (
+        master[(master["country"] == ci_country) & (master["group"] == ci_drug)]
+        .sort_values("date")
+        .set_index("date")[["items_per_1k", "tsun_mean"]]
+        .dropna(subset=["items_per_1k"])
+    )
+    df_main["tsun_hours"] = df_main["tsun_mean"] / 60
+
+    # Build covariate column — keep DatetimeIndex throughout (package needs it)
+    if ci_covariate == "Other drug group":
+        other_drug = "Anxiolytics" if ci_drug == "Antidepressants" else "Antidepressants"
+        df_other = (
+            master[(master["country"] == ci_country) & (master["group"] == other_drug)]
+            .sort_values("date").set_index("date")[["items_per_1k"]]
+            .rename(columns={"items_per_1k": "x1"})
+        )
+        df_ci = df_main[["items_per_1k"]].rename(columns={"items_per_1k": "y"}).join(df_other)
+    else:  # Sunshine hours
+        df_ci = df_main[["items_per_1k", "tsun_hours"]].rename(
+            columns={"items_per_1k": "y", "tsun_hours": "x1"}
+        )
+
+    df_ci = df_ci.dropna()
+
+    # causalimpact internals do data[0] — must use plain integer RangeIndex
+    interv_ts = pd.Timestamp(intervention_date)
+    date_index = pd.DatetimeIndex(df_ci.index)
+    interv_i = next((i for i, d in enumerate(date_index) if d >= interv_ts), None)
+    df_ci = df_ci.reset_index(drop=True)
+    # causalimpact misc.py does data_mu[0], data_mu[1]... — needs integer column labels
+    df_ci.columns = range(len(df_ci.columns))
+
+    if interv_i is None or interv_i < 6 or interv_i >= len(df_ci) - 3:
+        st.warning("Choose an intervention date with at least 6 months before and 3 months after.")
+        return
+
+    pre_period  = [0, interv_i - 1]
+    post_period = [interv_i, len(df_ci) - 1]
+
+    # ── Run CausalImpact ──────────────────────────────────────────────────────
+    if not HAS_CI:
+        st.error("Install causalimpact: `pip install causalimpact`")
+        return
+
+    with st.spinner("Running Bayesian structural time-series model…"):
+        try:
+            ci_model = CausalImpact(df_ci, pre_period, post_period)
+            ci_model.run()
+        except Exception as e:
+            import traceback
+            st.error(f"Model error: {e}")
+            st.code(traceback.format_exc())
+            return
+
+    # ── Plot ──────────────────────────────────────────────────────────────────
+    plt.close("all")
+    ci_model.plot(figsize=(12, 8))
+    fig = plt.gcf()
+    fig.patch.set_facecolor("white")
+    for ax in fig.axes:
+        ax.set_facecolor("white")
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(labelsize=12)
+        for line in ax.get_lines():
+            if line.get_color() in ["blue", "steelblue", "#1f77b4"]:
+                line.set_color(color)
+    st.pyplot(fig)
+    plt.close("all")
+
+    # ── Summary cards ─────────────────────────────────────────────────────────
+    summary_text = ci_model.summary()
+    report_text  = ci_model.summary(output="report")
+
+    st.markdown("<hr style='margin:16px 0;border-color:#DDD;'>", unsafe_allow_html=True)
+    s_col, r_col = st.columns([1, 1])
+    with s_col:
+        st.markdown("<p style='font-weight:700;color:#222;font-size:1.1rem;margin-bottom:6px;'>Summary</p>",
+                    unsafe_allow_html=True)
+        st.code(summary_text, language=None)
+    with r_col:
+        st.markdown("<p style='font-weight:700;color:#222;font-size:1.1rem;margin-bottom:6px;'>Report</p>",
+                    unsafe_allow_html=True)
+        st.markdown(
+            f"<div style='background:#F7F8FC;border-radius:8px;padding:16px;font-size:0.88rem;"
+            f"color:#333;line-height:1.7;white-space:pre-wrap;font-family:monospace;'>{report_text}</div>",
+            unsafe_allow_html=True,
+        )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
